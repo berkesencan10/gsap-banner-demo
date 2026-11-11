@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GSAP Rich-Media Banner Demo</title>
+<style>
+  :root{
+    --bg:#0e1b24; --teal:#12a594; --teal-d:#0b6e63; --orange:#ff7a2f; --cream:#fff4e6;
+    --page:#f3f5f7; --ink:#14202a; --muted:#5b6b78;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--page);color:var(--ink);line-height:1.5}
+  .wrap{max-width:860px;margin:0 auto;padding:32px 16px 64px}
+  h1{font-size:1.5rem;margin:0 0 4px}
+  .lead{color:var(--muted);margin:0 0 28px;max-width:62ch}
+  h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:32px 0 10px}
+  .slot{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+  .bar{display:flex;gap:8px;margin-top:10px}
+  button.ctl{font:inherit;font-size:.85rem;padding:6px 12px;border:1px solid #c5ced6;border-radius:6px;background:#fff;cursor:pointer}
+  button.ctl:hover{background:#eaf0f4}
+  .scroll{max-width:100%;overflow-x:auto}
+
+  /* ---------- Banner base ---------- */
+  .ad{position:relative;overflow:hidden;background:var(--bg);color:#fff;cursor:pointer;
+      border-radius:2px;box-shadow:0 1px 0 rgba(0,0,0,.08),0 6px 18px rgba(14,27,36,.18);
+      font-family:Arial,Helvetica,sans-serif;flex:none;user-select:none}
+  .ad *{position:absolute;margin:0}
+  .ad:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+  .ad .blob{border-radius:50%;background:var(--teal);opacity:.9}
+  .ad .blob2{border-radius:50%;background:var(--teal-d)}
+  .ad .logo{font-weight:800;letter-spacing:.14em;font-size:11px;color:var(--cream)}
+  .ad .logo b{color:var(--orange)}
+  .ad .l1,.ad .l2{font-weight:800;line-height:1;white-space:nowrap}
+  .ad .l2{color:var(--orange)}
+  .ad .bike{overflow:visible}
+  .ad .bike *{position:static}
+  .ad .tag{background:var(--orange);color:#1b0f06;font-weight:800;border-radius:50%;
+           display:flex;align-items:center;justify-content:center;text-align:center;line-height:1}
+  .ad .tag *{position:static}
+  .ad .cta{background:var(--cream);color:var(--bg);font-weight:800;border-radius:4px;
+           display:flex;align-items:center;justify-content:center;white-space:nowrap}
+  .ad .dealer{color:#c4d6df;white-space:nowrap}
+  .ad .flash{inset:0;background:#fff;opacity:0;pointer-events:none}
+
+  /* ---------- 300x250 ---------- */
+  .ad.sq{width:300px;height:250px}
+  .sq .blob{width:220px;height:220px;left:-70px;top:90px}
+  .sq .blob2{width:120px;height:120px;right:-30px;top:-40px}
+  .sq .logo{left:16px;top:14px}
+  .sq .l1{left:16px;top:38px;font-size:26px}
+  .sq .l2{left:16px;top:68px;font-size:26px}
+  .sq .bike{left:30px;top:118px;width:170px;height:85px}
+  .sq .tag{right:14px;top:108px;width:74px;height:74px;font-size:11px;flex-direction:column;gap:2px}
+  .sq .tag strong{font-size:22px}
+  .sq .cta{left:16px;bottom:14px;width:112px;height:30px;font-size:13px}
+  .sq .dealer{right:14px;bottom:20px;font-size:10px}
+
+  /* ---------- 728x90 ---------- */
+  .ad.lb{width:728px;height:90px}
+  .lb .blob{width:300px;height:300px;left:-60px;top:-110px}
+  .lb .blob2{width:110px;height:110px;right:-30px;top:-55px}
+  .lb .logo{left:16px;top:10px}
+  .lb .l1{left:16px;top:30px;font-size:22px}
+  .lb .l2{left:16px;top:56px;font-size:22px}
+  .lb .bike{left:285px;top:12px;width:130px;height:65px}
+  .lb .tag{left:440px;top:12px;width:66px;height:66px;font-size:10px;flex-direction:column;gap:2px}
+  .lb .tag strong{font-size:19px}
+  .lb .dealer{left:522px;top:34px;font-size:11px;white-space:normal;width:80px;line-height:1.3}
+  .lb .cta{right:16px;top:28px;width:104px;height:34px;font-size:13px}
+
+  /* ---------- Event log ---------- */
+  .log{background:#0e1b24;color:#bfe9e2;font:12px/1.6 ui-monospace,Menlo,Consolas,monospace;
+       border-radius:8px;padding:12px 14px;height:190px;overflow:auto;white-space:pre-wrap}
+  .log .t{color:#6d8794}.log .k{color:#ffb27d}
+  ul.points{margin:0;padding-left:1.2em;color:#33424f}
+  ul.points li{margin:4px 0}
+  code{background:#e4eaee;padding:1px 5px;border-radius:4px;font-size:.9em}
+  .note{color:var(--muted);font-size:.85rem;margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Rich-media banner demo (GSAP)</h1>
+  <p class="lead">Two sizes of an interactive ad for a fictional e-bike brand, built with plain HTML, CSS and ES6 JavaScript. Animation is a single GSAP timeline per banner. Click a banner to see the click-out and tracking events in the log below.</p>
+
+  <h2>300 × 250</h2>
+  <div class="slot">
+    <div class="ad sq" data-size="300x250" tabindex="0" role="link" aria-label="Voltaro e-bike ad, 300 by 250">
+      <div class="blob"></div><div class="blob2"></div>
+      <div class="logo">VOLT<b>ARO</b></div>
+      <div class="l1">Ride further.</div>
+      <div class="l2">Charge less.</div>
+      <svg class="bike" viewBox="0 0 200 100" fill="none" stroke="#fff4e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <g class="wheel" data-origin="40 70"><circle cx="40" cy="70" r="26"/><path d="M40 44V96M14 70H66M22 52L58 88M58 52L22 88" stroke-width="1.5" opacity=".6"/></g>
+        <g class="wheel" data-origin="160 70"><circle cx="160" cy="70" r="26"/><path d="M160 44V96M134 70H186M142 52L178 88M178 52L142 88" stroke-width="1.5" opacity=".6"/></g>
+        <path class="frame" d="M40 70L72 34L122 34L160 70M72 34L88 70L122 34M88 70H40"/>
+        <path class="frame" d="M60 28H84M118 34L124 16H140"/>
+        <rect class="battery" x="82" y="46" width="30" height="9" rx="3" fill="#ff7a2f" stroke="none" transform="rotate(32 97 50)"/>
+      </svg>
+      <div class="tag"><span>from</span><strong>€1,990</strong></div>
+      <div class="cta">Find a dealer</div>
+      <div class="dealer">Dealer: Poznań, ul. Przykładowa 1</div>
+      <div class="flash"></div>
+    </div>
+  </div>
+  <div class="bar"><button class="ctl" data-replay="0">↻ Replay</button></div>
+
+  <h2>728 × 90</h2>
+  <div class="scroll">
+    <div class="ad lb" data-size="728x90" tabindex="0" role="link" aria-label="Voltaro e-bike ad, 728 by 90">
+      <div class="blob"></div><div class="blob2"></div>
+      <div class="logo">VOLT<b>ARO</b></div>
+      <div class="l1">Ride further.</div>
+      <div class="l2">Charge less.</div>
+      <svg class="bike" viewBox="0 0 200 100" fill="none" stroke="#fff4e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <g class="wheel" data-origin="40 70"><circle cx="40" cy="70" r="26"/><path d="M40 44V96M14 70H66M22 52L58 88M58 52L22 88" stroke-width="1.5" opacity=".6"/></g>
+        <g class="wheel" data-origin="160 70"><circle cx="160" cy="70" r="26"/><path d="M160 44V96M134 70H186M142 52L178 88M178 52L142 88" stroke-width="1.5" opacity=".6"/></g>
+        <path class="frame" d="M40 70L72 34L122 34L160 70M72 34L88 70L122 34M88 70H40"/>
+        <path class="frame" d="M60 28H84M118 34L124 16H140"/>
+        <rect class="battery" x="82" y="46" width="30" height="9" rx="3" fill="#ff7a2f" stroke="none" transform="rotate(32 97 50)"/>
+      </svg>
+      <div class="tag"><span>from</span><strong>€1,990</strong></div>
+      <div class="dealer">Dealer:<br>Poznań</div>
+      <div class="cta">Find a dealer</div>
+      <div class="flash"></div>
+    </div>
+  </div>
+  <div class="bar"><button class="ctl" data-replay="1">↻ Replay</button></div>
+
+  <h2>Tracking log</h2>
+  <div class="log" id="log" aria-live="polite"></div>
+
+  <h2>What this demonstrates</h2>
+  <ul class="points">
+    <li>One <code>gsap.timeline()</code> per banner: staggered text, rolling wheels, <code>back.out</code> price tag pop, repeating CTA pulse.</li>
+    <li>Same animation code reused for two layouts; only CSS positions differ.</li>
+    <li>Click-out URL with UTM parameters and simulated tracking events (<code>impression</code>, <code>anim_complete</code>, <code>hover</code>, <code>click</code>, <code>replay</code>).</li>
+    <li>Respects <code>prefers-reduced-motion</code> (shows the final frame), keyboard accessible (Enter / Space).</li>
+  </ul>
+  <p class="note">The brand, dealer and price are fictional. In a real campaign the tracking calls would fire pixels or the ad server's click macro instead of writing to this log.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  const CLICK_URL = 'https://example.com/dealers';
+  const logEl = document.getElementById('log');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const t0 = performance.now();
+
+  // Simulated tracking: in production this would fire a pixel / ad-server macro.
+  function track(event, size) {
+    const s = ((performance.now() - t0) / 1000).toFixed(2).padStart(6, ' ');
+    const line = document.createElement('div');
+    line.innerHTML = `<span class="t">${s}s</span>  <span class="k">${event}</span>  ${size}`;
+    logEl.appendChild(line);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function buildTimeline(ad) {
+    const q = (sel) => ad.querySelectorAll(sel);
+    const size = ad.dataset.size;
+    const isSquare = size === '300x250';
+
+    // Wheel pivots (SVG user-space origin)
+    q('.wheel').forEach((w) => {
+      const [x, y] = w.dataset.origin.split(' ').map(Number);
+      gsap.set(w, { svgOrigin: `${x} ${y}` });
+    });
+
+    const tl = gsap.timeline({
+      paused: true,
+      defaults: { ease: 'power3.out' },
+      onStart: () => track('impression', size),
+      onComplete: () => track('anim_complete', size)
+    });
+
+    tl.from(q('.blob'),  { xPercent: -60, opacity: 0, duration: 0.7 }, 0)
+      .from(q('.blob2'), { scale: 0, duration: 0.6, ease: 'back.out(1.6)' }, 0.1)
+      .from(q('.logo'),  { y: -16, opacity: 0, duration: 0.4 }, 0.2)
+      .from(q('.l1'),    { x: -40, opacity: 0, duration: 0.5 }, 0.45)
+      .from(q('.l2'),    { x: -40, opacity: 0, duration: 0.5 }, 0.65)
+      // bike rolls in from the left while the wheels spin
+      .from(q('.bike'),  { x: isSquare ? -240 : -180, opacity: 0, duration: 1.1, ease: 'power2.out' }, 0.8)
+      .fromTo(q('.wheel'), { rotation: -540 }, { rotation: 0, duration: 1.1, ease: 'power2.out' }, 0.8)
+      .from(q('.frame, .battery'), { opacity: 0, duration: 0.3, stagger: 0.05 }, 0.9)
+      .from(q('.tag'),   { scale: 0, rotation: -25, duration: 0.55, ease: 'back.out(2.2)' }, 1.7)
+      .from(q('.dealer'),{ opacity: 0, y: 8, duration: 0.4 }, 2.0)
+      .from(q('.cta'),   { y: 20, opacity: 0, duration: 0.45 }, 2.1)
+      // attention pulse on the CTA
+      .to(q('.cta'),     { scale: 1.08, duration: 0.25, yoyo: true, repeat: 3, ease: 'sine.inOut' }, 2.8);
+
+    return tl;
+  }
+
+  const ads = [...document.querySelectorAll('.ad')];
+  const timelines = ads.map(buildTimeline);
+
+  function play(i) {
+    if (reduceMotion) {
+      timelines[i].progress(1);
+      track('impression', ads[i].dataset.size);
+      track('anim_complete', ads[i].dataset.size);
+    } else {
+      timelines[i].restart();
+    }
+  }
+
+  ads.forEach((ad, i) => {
+    const size = ad.dataset.size;
+    let hovered = false;
+
+    ad.addEventListener('mouseenter', () => {
+      if (hovered) return;           // report hover once per play
+      hovered = true;
+      track('hover', size);
+    });
+
+    const clickOut = () => {
+      track('click', size);
+      const url = `${CLICK_URL}?utm_source=demo&utm_medium=banner&utm_campaign=voltaro&size=${size}`;
+      track('clickout → ' + url, size);
+      if (!reduceMotion) {
+        gsap.fromTo(ad.querySelector('.flash'), { opacity: 0.7 }, { opacity: 0, duration: 0.35 });
+      }
+      // Demo only: don't actually navigate away from the page.
+    };
+    ad.addEventListener('click', clickOut);
+    ad.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); clickOut(); }
+    });
+
+    ad._reset = () => { hovered = false; };
+  });
+
+  document.querySelectorAll('[data-replay]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const i = Number(btn.dataset.replay);
+      ads[i]._reset();
+      track('replay', ads[i].dataset.size);
+      play(i);
+    });
+  });
+
+  // Start when fonts/layout are ready.
+  window.addEventListener('load', () => ads.forEach((_, i) => play(i)));
+
+  // Expose for testing.
+  window.__banners = { timelines };
+})();
+</script>
+</body>
+</html>
